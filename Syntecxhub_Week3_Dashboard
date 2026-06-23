@@ -1,0 +1,333 @@
+import { useState } from "react";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart, Pie, Cell } from "recharts";
+
+const revenueData = [
+  { date: "May 7", value: 5000 },
+  { date: "May 8", value: 9500 },
+  { date: "May 9", value: 7000 },
+  { date: "May 10", value: 18420 },
+  { date: "May 11", value: 22000 },
+  { date: "May 12", value: 16000 },
+  { date: "May 13", value: 19000 },
+];
+
+const pieData = [
+  { name: "Electronics", value: 35, color: "#6C63FF" },
+  { name: "Accessories", value: 25, color: "#4A90D9" },
+  { name: "Clothing", value: 20, color: "#2DD4BF" },
+  { name: "Home & Living", value: 15, color: "#FB923C" },
+  { name: "Others", value: 5, color: "#F472B6" },
+];
+
+const orders = [
+  { id: "#10234", customer: "Alice Johnson", initial: "A", date: "May 13, 2024", amount: "$250.00", status: "Completed", color: "#6C63FF" },
+  { id: "#10233", customer: "Michael Brown", initial: "M", date: "May 13, 2024", amount: "$125.50", status: "Processing", color: "#4A90D9" },
+  { id: "#10232", customer: "Sophia Davis", initial: "S", date: "May 12, 2024", amount: "$320.00", status: "Shipped", color: "#2DD4BF" },
+  { id: "#10231", customer: "James Wilson", initial: "J", date: "May 12, 2024", amount: "$85.90", status: "Pending", color: "#FB923C" },
+];
+
+const products = [
+  { name: "Laptop", value: 5420, color: "#6C63FF", icon: "💻" },
+  { name: "Smartphone", value: 4210, color: "#4A90D9", icon: "📱" },
+  { name: "Headphones", value: 2980, color: "#2DD4BF", icon: "🎧" },
+  { name: "Smartwatch", value: 1890, color: "#FB923C", icon: "⌚" },
+  { name: "Tablet", value: 1210, color: "#F472B6", icon: "📟" },
+];
+
+const navItems = [
+  { label: "Overview", icon: "⊞", active: true },
+  { label: "Analytics", icon: "📊", active: false },
+  { label: "Sales", icon: "🛒", active: false },
+  { label: "Users", icon: "👥", active: false },
+  { label: "Products", icon: "📦", active: false },
+  { label: "Reports", icon: "📄", active: false },
+  { label: "Settings", icon: "⚙️", active: false },
+];
+
+const statusStyles = {
+  Completed: { bg: "#DCFCE7", color: "#16A34A" },
+  Processing: { bg: "#DBEAFE", color: "#2563EB" },
+  Shipped: { bg: "#E0F2FE", color: "#0284C7" },
+  Pending: { bg: "#FEF9C3", color: "#CA8A04" },
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: "#1E1B4B", color: "#fff", padding: "8px 14px", borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: "0 4px 16px rgba(0,0,0,0.18)" }}>
+        <div style={{ fontSize: 11, color: "#a5b4fc", marginBottom: 2 }}>{label}</div>
+        <div>${payload[0].value.toLocaleString()}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export default function Dashboard() {
+  const [activeNav, setActiveNav] = useState("Overview");
+
+  return (
+    <div style={{ display: "flex", height: "100vh", fontFamily: "'Inter', 'Segoe UI', sans-serif", background: "#F1F5FB", color: "#1E293B", overflow: "hidden" }}>
+      {/* Sidebar */}
+      <aside style={{ width: 180, background: "#fff", display: "flex", flexDirection: "column", padding: "20px 0", boxShadow: "2px 0 12px rgba(100,100,200,0.07)", zIndex: 10, flexShrink: 0 }}>
+        {/* Logo */}
+        <div style={{ padding: "0 20px 24px 20px", borderBottom: "1px solid #F1F5F9" }}>
+          <div style={{ fontWeight: 800, fontSize: 15, color: "#6C63FF", letterSpacing: 1 }}>SYNTECXHUB</div>
+          <div style={{ fontSize: 9, color: "#94A3B8", letterSpacing: 2, marginTop: 2 }}>CREATE | THINK | SOLVE</div>
+        </div>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "16px 10px" }}>
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              onClick={() => setActiveNav(item.label)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
+                borderRadius: 10, marginBottom: 4, cursor: "pointer", fontSize: 13, fontWeight: 500,
+                background: activeNav === item.label ? "linear-gradient(90deg,#6C63FF15,#6C63FF08)" : "transparent",
+                color: activeNav === item.label ? "#6C63FF" : "#64748B",
+                borderLeft: activeNav === item.label ? "3px solid #6C63FF" : "3px solid transparent",
+                transition: "all 0.15s",
+              }}
+            >
+              <span style={{ fontSize: 16 }}>{item.icon}</span>
+              {item.label}
+            </div>
+          ))}
+        </nav>
+
+        {/* Export */}
+        <div style={{ padding: "0 10px" }}>
+          <button style={{
+            display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "10px 12px",
+            background: "#F8F7FF", border: "1px solid #E2E0FF", borderRadius: 10, cursor: "pointer",
+            color: "#6C63FF", fontSize: 12, fontWeight: 600,
+          }}>
+            <span>⬇️</span> Export Report
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Topbar */}
+        <header style={{ background: "#fff", padding: "0 28px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 6px rgba(100,100,200,0.07)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 20, color: "#94A3B8", cursor: "pointer" }}>☰</span>
+            <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Dashboard</h1>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <span style={{ fontSize: 18, color: "#94A3B8", cursor: "pointer" }}>🔍</span>
+            <span style={{ fontSize: 18, color: "#94A3B8", cursor: "pointer" }}>🔔</span>
+            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#6C63FF", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 14 }}>J</div>
+          </div>
+        </header>
+
+        {/* Scrollable Content */}
+        <div style={{ flex: 1, overflow: "auto", padding: "20px 28px" }}>
+
+          {/* Stat Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 20 }}>
+            {[
+              { label: "Total Revenue", value: "$24,560", change: "+12.5%", up: true, color: "#6C63FF", bg: "#F3F2FF", data: [3,5,4,8,6,10,9], icon: "💲" },
+              { label: "New Users", value: "1,245", change: "+8.3%", up: true, color: "#4A90D9", bg: "#EFF6FF", data: [2,4,3,6,5,7,8], icon: "👥" },
+              { label: "Orders", value: "3,456", change: "-3.2%", up: false, color: "#FB923C", bg: "#FFF7ED", data: [8,7,9,6,8,5,7], icon: "🛒" },
+              { label: "Conversion Rate", value: "2.45%", change: "+5.7%", up: false, color: "#2DD4BF", bg: "#F0FDFA", data: [3,4,3,5,4,6,5], icon: "📊" },
+            ].map((card) => (
+              <div key={card.label} style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 10, background: card.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{card.icon}</div>
+                  <div style={{ width: 80, height: 36 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={card.data.map((v, i) => ({ v }))}>
+                        <Line type="monotone" dataKey="v" stroke={card.color} strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "#94A3B8", fontWeight: 500, marginTop: 2 }}>{card.label}</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#1E293B" }}>{card.value}</div>
+                <div style={{ fontSize: 11, color: card.up ? "#16A34A" : "#DC2626", fontWeight: 600 }}>
+                  {card.up ? "▲" : "▼"} {card.change} <span style={{ color: "#94A3B8", fontWeight: 400 }}>vs last month</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Revenue + Pie */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 16, marginBottom: 20 }}>
+            {/* Revenue Chart */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px 20px 12px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>Revenue Overview</div>
+                <select style={{ fontSize: 12, border: "1px solid #E2E8F0", borderRadius: 8, padding: "4px 10px", color: "#64748B", background: "#fff", cursor: "pointer" }}>
+                  <option>This Month</option>
+                </select>
+              </div>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6C63FF" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#6C63FF" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} axisLine={false} tickLine={false} tickFormatter={v => `${v / 1000}K`} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="value" stroke="#6C63FF" strokeWidth={2.5} fill="url(#revGrad)" dot={{ fill: "#6C63FF", r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: "#6C63FF" }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Pie Chart */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>Sales by Category</div>
+                <select style={{ fontSize: 12, border: "1px solid #E2E8F0", borderRadius: 8, padding: "4px 10px", color: "#64748B", background: "#fff" }}>
+                  <option>This Month</option>
+                </select>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <div style={{ position: "relative", width: 160, height: 160, flexShrink: 0 }}>
+                  <PieChart width={160} height={160}>
+                    <Pie data={pieData} cx={75} cy={75} innerRadius={52} outerRadius={75} dataKey="value" paddingAngle={2}>
+                      {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                  </PieChart>
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", textAlign: "center" }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: "#1E293B" }}>$24,560</div>
+                    <div style={{ fontSize: 10, color: "#94A3B8" }}>Total</div>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  {pieData.map((item) => (
+                    <div key={item.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: item.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, color: "#475569" }}>{item.name}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 8, fontSize: 12 }}>
+                        <span style={{ color: "#1E293B", fontWeight: 600 }}>{item.name === "Electronics" ? "$8,576" : item.name === "Accessories" ? "$6,140" : item.name === "Clothing" ? "$4,912" : item.name === "Home & Living" ? "$3,684" : "$1,248"}</span>
+                        <span style={{ color: "#94A3B8" }}>({item.value}%)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 16 }}>
+            {/* Recent Orders */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)" }}>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 14 }}>Recent Orders</div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    {["Order ID", "Customer", "Date", "Amount", "Status"].map(h => (
+                      <th key={h} style={{ textAlign: "left", color: "#94A3B8", fontWeight: 600, paddingBottom: 10, fontSize: 11 }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} style={{ borderTop: "1px solid #F8FAFC" }}>
+                      <td style={{ padding: "10px 0", color: "#6C63FF", fontWeight: 600 }}>{order.id}</td>
+                      <td style={{ padding: "10px 0" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 26, height: 26, borderRadius: "50%", background: order.color, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700 }}>{order.initial}</div>
+                          <span style={{ color: "#1E293B", fontWeight: 500 }}>{order.customer}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 0", color: "#94A3B8" }}>{order.date}</td>
+                      <td style={{ padding: "10px 0", fontWeight: 600 }}>{order.amount}</td>
+                      <td style={{ padding: "10px 0" }}>
+                        <span style={{
+                          padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                          background: statusStyles[order.status].bg, color: statusStyles[order.status].color
+                        }}>{order.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 6, color: "#6C63FF", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                View all orders <span>→</span>
+              </div>
+            </div>
+
+            {/* Top Products */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>Top Products</div>
+                <select style={{ fontSize: 11, border: "1px solid #E2E8F0", borderRadius: 8, padding: "3px 8px", color: "#64748B", background: "#fff" }}>
+                  <option>This Month</option>
+                </select>
+              </div>
+              {products.map((p) => (
+                <div key={p.name} style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>{p.icon}</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: "#1E293B" }}>{p.name}</span>
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#1E293B" }}>${p.value.toLocaleString()}</span>
+                  </div>
+                  <div style={{ height: 6, background: "#F1F5F9", borderRadius: 10, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${(p.value / 5420) * 100}%`, background: p.color, borderRadius: 10, transition: "width 0.6s ease" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Traffic Sources */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 8px rgba(100,100,200,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <div style={{ fontWeight: 700, fontSize: 15 }}>Traffic Sources</div>
+                <select style={{ fontSize: 11, border: "1px solid #E2E8F0", borderRadius: 8, padding: "3px 8px", color: "#64748B", background: "#fff" }}>
+                  <option>This Month</option>
+                </select>
+              </div>
+              {/* World Map Placeholder */}
+              <div style={{ position: "relative", height: 140, background: "linear-gradient(135deg,#EDE9FE,#DBEAFE)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 500 280" width="100%" height="100%" style={{ opacity: 0.85 }}>
+                  {/* Simplified world map blobs */}
+                  {/* North America */}
+                  <ellipse cx="115" cy="105" rx="60" ry="45" fill="#6C63FF" opacity="0.35" />
+                  <ellipse cx="130" cy="150" rx="35" ry="25" fill="#6C63FF" opacity="0.25" />
+                  {/* South America */}
+                  <ellipse cx="155" cy="205" rx="28" ry="42" fill="#4A90D9" opacity="0.3" />
+                  {/* Europe */}
+                  <ellipse cx="255" cy="90" rx="32" ry="28" fill="#6C63FF" opacity="0.5" />
+                  {/* Africa */}
+                  <ellipse cx="265" cy="175" rx="30" ry="45" fill="#6C63FF" opacity="0.3" />
+                  {/* Asia */}
+                  <ellipse cx="370" cy="110" rx="75" ry="50" fill="#6C63FF" opacity="0.55" />
+                  {/* Australia */}
+                  <ellipse cx="415" cy="200" rx="35" ry="22" fill="#4A90D9" opacity="0.45" />
+                  {/* Hotspots */}
+                  <circle cx="255" cy="90" r="8" fill="#6C63FF" opacity="0.7" />
+                  <circle cx="370" cy="110" r="10" fill="#6C63FF" opacity="0.8" />
+                  <circle cx="115" cy="105" r="7" fill="#4A90D9" opacity="0.7" />
+                </svg>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#94A3B8" }}>
+                  <div style={{ width: 60, height: 6, borderRadius: 3, background: "linear-gradient(90deg,#C7D2FE,#6C63FF)" }} />
+                  Low
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#94A3B8" }}>
+                  High
+                  <div style={{ width: 60, height: 6, borderRadius: 3, background: "linear-gradient(90deg,#6C63FF,#3730A3)" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
